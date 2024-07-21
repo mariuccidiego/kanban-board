@@ -1,0 +1,198 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+.container {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    overflow-x: auto;
+}
+.column {
+    flex: 1;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-right: 20px;
+}
+.column h2 {
+    text-align: center;
+    margin-top: 0;
+}
+.card {
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+    transition: box-shadow 0.3s ease;
+}
+.card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+.card-title {
+    font-weight: bold;
+    font-size: 1.2em;
+    margin-bottom: 10px;
+    margin-top: 0px;
+}
+.card-description {
+    margin-bottom: 20px;
+}
+.card-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.card-button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+.card-button-details {
+    background-color: #007bff;
+    color: #fff;
+    transition: background-color 0.3s ease;
+}
+.card-button-details:hover {
+    background-color: #0056b3;
+}
+.arrow-button {
+    background-color: #28a745;
+    color: #fff;
+    padding: 10px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease;
+}
+.arrow-button:hover {
+    background-color: #218838;
+}
+.arrow-button img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+.popup, .add-task-popup, .history-popup {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+.popup-content, .add-task-popup-content, .history-popup-content {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    max-width: 500px;
+    text-align: center;
+    position: relative;
+}
+.popup-content h2, .add-task-popup-content h2, .history-popup-content h2 {
+    margin-top: 0;
+    font-size: 1.5em;
+    margin-bottom: 10px;
+}
+.popup-content p, .add-task-popup-content p, .history-popup-content p {
+    margin: 10px 0;
+    font-size: 1em;
+    color: #333;
+}
+.popup-content button, .add-task-popup-content button, .history-popup-content button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease;
+}
+.popup-content button:hover, .add-task-popup-content button:hover, .history-popup-content button:hover {
+    background-color: #007bff;
+}
+.popup-close, .add-task-popup-close, .history-popup-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: transparent;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    color: #aaa;
+}
+.popup-close:hover, .add-task-popup-close:hover, .history-popup-close:hover {
+    color: #000;
+}
+.add-task-popup-content form {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+.add-task-popup-content form input, .add-task-popup-content form textarea, .add-task-popup-content form select {
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+.add-task-popup-content form button {
+    background-color: #007bff;
+    color: #fff;
+    transition: background-color 0.3s ease;
+}
+.add-task-popup-content form button:hover {
+    background-color: #0056b3;
+}
+.history-block {
+    background-color: #f1f1f1;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 10px 0;
+    position: relative;
+}
+.history-arrow {
+    position: absolute;
+    top: 50%;
+    left: -20px;
+    width: 20px;
+    height: 20px;
+    transform: translateY(-50%);
+}
+.add-task-card {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
+    cursor: pointer;
+}
+.add-task-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+.add-task-card p {
+    margin: 0;
+    font-size: 2em;
+    color: #007bff;
+}

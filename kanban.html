@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanban Buddy</title>
+    <link id="theme-link" rel="stylesheet" href="lightMode.css">
+    <style>
+        #logo{
+            width: 400px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            padding-top: 10px;
+        }
+        .theme-switch {
+            display: flex;
+            align-items: center;
+            margin: 20px;
+        }
+
+        .theme-switch label {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+    </style>
+</head>
+<body>
+    <img src="logoKanban.png" alt="logo" id="logo">
+    <div class="container">
+        <div class="column" id="nuovo">
+            <h2>Nuovo</h2>
+            <div class="add-task-card" onclick="showAddTaskForm()">
+                <p>+</p>
+            </div>
+        </div>
+        <div class="column" id="in_lavorazione">
+            <h2>In Lavorazione</h2>
+        </div>
+        <div class="column" id="completato">
+            <h2>Completato</h2>
+        </div>
+        <div class="column" id="archivio">
+            <h2>Archivio</h2>
+        </div>
+    </div>
+
+    <div id="popup" class="popup">
+        <div class="popup-content">
+            <button class="popup-close" onclick="closePopup()" style="background-color: #c82333;">&times;</button>
+            <h2 id="popup-title">Titolo Task</h2>
+            <input type="text" id="popup-title-input" placeholder="Titolo">
+            <p id="popup-description">Descrizione del task</p>
+            <textarea id="popup-description-input" placeholder="Descrizione"></textarea>
+            <p id="popup-date">Data di creazione: </p>
+            <p id="popup-creator">Creatore: </p>
+            <input type="text" id="popup-creator-input" placeholder="Creatore">
+            <p id="popup-priority">Priorità: </p>
+            <select id="popup-priority-input">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+            </select>
+            <button id="enable-edit-button" onclick="enableEditMode()">Modifica</button>
+            <button id="save-changes-button" onclick="saveTaskChanges()" style="display:none;">Salva Modifiche</button>
+            <button id="history-button" onclick="showTaskHistory()">Visualizza Storico</button>
+        </div>
+    </div>
+
+    <div id="add-task-popup" class="add-task-popup">
+        <div class="add-task-popup-content">
+            <button class="add-task-popup-close" onclick="closeAddTaskForm()" style="background-color: #c82333;">&times;</button>
+            <h2>Aggiungi Nuovo Task</h2>
+            <form id="add-task-form" onsubmit="submitTaskForm(event)">
+                <input type="text" id="task-title" placeholder="Titolo" required>
+                <textarea id="task-description" placeholder="Descrizione" required></textarea>
+                <input type="text" id="task-creator" placeholder="Creatore" required>
+                <select id="task-priority" required>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+                <button type="submit">Aggiungi Task</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="history-popup" class="history-popup">
+        <div class="history-popup-content">
+            <button class="history-popup-close" onclick="closeHistoryPopup()" style="background-color: #c82333;">&times;</button>
+            <h2>Storico Task</h2>
+            <div id="history-container"></div>
+        </div>
+    </div>
+    <div class="theme-switch">
+        <label for="theme-toggle">Modalità Scura</label>
+        <label class="switch">
+            <input type="checkbox" id="theme-toggle">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    <script>
+        let currentTaskId = null;
+
+        const toggleSwitch = document.getElementById('theme-toggle');
+        const themeLink = document.getElementById('theme-link');
+
+        toggleSwitch.addEventListener('change', function() {
+            if (toggleSwitch.checked) {
+                themeLink.setAttribute('href', 'darkMode.css');
+            } else {
+                themeLink.setAttribute('href', 'lightMode.css');
+            }
+        });
+
+        function showAddTaskForm() {
+            document.getElementById('add-task-popup').style.display = 'flex';
+        }
+
+        function closeAddTaskForm() {
+            document.getElementById('add-task-popup').style.display = 'none';
+        }
+
+        function aggiungiTask() {
+            showAddTaskForm();
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            fetchTasks();
+        });
+
+        function fetchTasks() {
+            console.log("Fetching tasks...");
+            fetch('getTasks.php')
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Tasks ricevuti:", data);
+                    data.forEach(task => {
+                        createTaskCard(task);
+                    });
+                })
+                .catch(error => console.error('Errore durante il recupero dei task:', error));
+        }
+
+        function createTaskCard(task) {
+            const card = document.createElement('div');
+            card.classList.add('card');
+
+            const cardTitle = document.createElement('p');
+            cardTitle.classList.add('card-title');
+            cardTitle.textContent = task.titolo;
+            card.appendChild(cardTitle);
+
+            const cardButtons = document.createElement('div');
+            cardButtons.classList.add('card-buttons');
+
+            const detailsButton = document.createElement('button');
+            detailsButton.classList.add('card-button', 'card-button-details');
+            detailsButton.textContent = 'Vedi dettagli';
+            detailsButton.onclick = () => openPopup(task);
+            cardButtons.appendChild(detailsButton);
+
+            const arrowButton = document.createElement('button');
+            arrowButton.classList.add('arrow-button');
+            arrowButton.innerHTML = '<img src="right-arrow.png" alt="Avanti">';
+            arrowButton.onclick = () => advanceTask(task.task_id, task.priorita, task.titolo, task.descripcion, task.creatore, task.fk_stato);
+            cardButtons.appendChild(arrowButton);
+
+            card.appendChild(cardButtons);
+
+            const column = getColumn(task.stato_titolo);
+            if (column) {
+                column.appendChild(card);
+            }
+        }
+
+        function getColumn(statusTitle) {
+            switch (statusTitle.toLowerCase()) {
+                case 'nuovo':
+                    return document.getElementById('nuovo');
+                case 'in lavorazione':
+                    return document.getElementById('in_lavorazione');
+                case 'completato':
+                    return document.getElementById('completato');
+                case 'archiviato':
+                    return document.getElementById('archivio');
+                default:
+                    return null;
+            }
+        }
+
+        function openPopup(task) {
+            currentTaskId = task.task_id;
+            document.getElementById('popup-title-input').value = task.titolo;
+            document.getElementById('popup-description-input').value = task.descripcion;
+            document.getElementById('popup-creator-input').value = task.creatore;
+            document.getElementById('popup-priority-input').value = task.priorita;
+            document.getElementById('popup-title').textContent = task.titolo;
+            document.getElementById('popup-description').textContent = task.descripcion;
+            document.getElementById('popup-date').textContent = 'Data di creazione: ' + task.data_creazione;
+            document.getElementById('popup-creator').textContent = 'Creatore: ' + task.creatore;
+            document.getElementById('popup-priority').textContent = 'Priorità: ' + task.priorita;
+            document.getElementById('enable-edit-button').style.display = 'ruby';
+            document.getElementById('save-changes-button').style.display = 'none';
+            toggleEditMode(false);
+            document.getElementById('popup').style.display = 'flex';
+        }
+
+        function closePopup() {
+            document.getElementById('popup').style.display = 'none';
+        }
+
+        function enableEditMode() {
+            toggleEditMode(true);
+            document.getElementById('enable-edit-button').style.display = 'none';
+            document.getElementById('save-changes-button').style.display = 'ruby';
+        }
+
+        function toggleEditMode(enable) {
+            document.getElementById('popup-title-input').style.display = enable ? 'block' : 'none';
+            document.getElementById('popup-description-input').style.display = enable ? 'block' : 'none';
+            document.getElementById('popup-creator-input').style.display = enable ? 'block' : 'none';
+            document.getElementById('popup-priority-input').style.display = enable ? 'block' : 'none';
+            document.getElementById('popup-title').style.display = enable ? 'none' : 'block';
+            document.getElementById('popup-description').style.display = enable ? 'none' : 'block';
+            document.getElementById('popup-date').style.display = enable ? 'none' : 'block';
+            document.getElementById('popup-creator').style.display = enable ? 'none' : 'block';
+            document.getElementById('popup-priority').style.display = enable ? 'none' : 'block';
+        }
+
+        function saveTaskChanges() {
+            const updatedTitle = document.getElementById('popup-title-input').value;
+            const updatedDescription = document.getElementById('popup-description-input').value;
+            const updatedCreator = document.getElementById('popup-creator-input').value;
+            const updatedPriority = document.getElementById('popup-priority-input').value;
+
+            fetch('updateTask.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ taskId: currentTaskId, titolo: updatedTitle, descripcion: updatedDescription, priorita: updatedPriority })
+            })
+            .then(response => {
+                if (response.ok) {
+                    closePopup();
+                    ricaricaPagina();
+                } else {
+                    console.error('Errore durante l\'aggiornamento del task:', response.statusText);
+                }
+            })
+            .catch(error => console.error('Errore durante l\'aggiornamento del task:', error));
+        }
+
+        function advanceTask(taskId, priorita, titolo, descripcion, creatore, stato) {
+            console.log(stato);
+            fetch('advanceTask.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ taskId: taskId, priorita: priorita, titolo: titolo, descripcion: descripcion, creatore: creatore, stato: stato})
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Ricarica i task dopo l'avanzamento
+                    ricaricaPagina();
+                } else {
+                    console.error('Errore durante l\'aggiornamento del task:', response.statusText);
+                }
+            })
+            .catch(error => console.error('Errore durante l\'aggiornamento del task:', error));
+        }
+
+        function ricaricaPagina() {
+            window.location.reload();
+        }
+
+        function submitTaskForm(event) {
+            event.preventDefault();
+            const title = document.getElementById('task-title').value;
+            const description = document.getElementById('task-description').value;
+            const creator = document.getElementById('task-creator').value;
+            const priority = document.getElementById('task-priority').value;
+
+            fetch('addTask.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ titolo: title, descripcion: description, creatore: creator, priorita: priority})
+            })
+            .then(response => {
+                if (response.ok) {
+                    closeAddTaskForm();
+                    ricaricaPagina();
+                } else {
+                    console.error('Errore durante l\'aggiunta del task:', response.statusText);
+                }
+            })
+            .catch(error => console.error('Errore durante l\'aggiunta del task:', error));
+        }
+
+
+        function showTaskHistory() {
+            fetch(`getTaskHistory.php?taskId=${currentTaskId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const historyContainer = document.getElementById('history-container');
+                    historyContainer.innerHTML = '';
+                    data.forEach((history, index) => {
+                        const historyBlock = document.createElement('div');
+                        historyBlock.classList.add('history-block');
+
+                        if (index > 0) {
+                            const historyArrow = document.createElement('div');
+                            historyArrow.classList.add('history-arrow');
+                            historyArrow.innerHTML = '&#x2193;';
+                            historyBlock.appendChild(historyArrow);
+                        }
+
+                        const historyContent = `
+                            <p><strong>Versione:</strong> ${index + 1}</p>
+                            <p><strong>Data:</strong> ${history.data}</p>
+                            <p><strong>Modifiche:</strong> ${history.modifiche}</p>
+                        `;
+                        historyBlock.innerHTML += historyContent;
+                        historyContainer.appendChild(historyBlock);
+                    });
+                    document.getElementById('history-popup').style.display = 'flex';
+                })
+                .catch(error => console.error('Errore durante il recupero dello storico dei task:', error));
+        }
+
+        function closeHistoryPopup() {
+            document.getElementById('history-popup').style.display = 'none';
+        }
+
+
+    </script>
+</body>
+</html>
